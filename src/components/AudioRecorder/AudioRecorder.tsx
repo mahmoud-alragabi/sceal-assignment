@@ -9,6 +9,24 @@ export const AudioRecorder: React.FC = () => {
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement>(null);
 
+  const uploadAudio = useCallback(async (audioBlob: Blob): Promise<void> => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "recording.wav");
+    try {
+      const response = await fetch(
+        "https://SOME_API_ENDPOINT_OBVIOUSLY/upload",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+      const data = await response.json();
+      console.log("Upload success:", data);
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  }, []);
+
   const startRecording = useCallback(async (): Promise<void> => {
     if (!navigator.mediaDevices) {
       alert("Your browser does not support audio recording.");
@@ -41,32 +59,14 @@ export const AudioRecorder: React.FC = () => {
     } catch (error) {
       console.error("Error accessing media devices:", error);
     }
-  }, []);
+  }, [audioChunks, uploadAudio]);
 
   const stopRecording = useCallback((): void => {
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       setIsRecording(false);
     }
-  }, [isRecording]);
-
-  const uploadAudio = useCallback(async (audioBlob: Blob): Promise<void> => {
-    const formData = new FormData();
-    formData.append("file", audioBlob, "recording.wav");
-    try {
-      const response = await fetch(
-        "https://SOME_API_ENDPOINT_OBVIOUSLY/upload",
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
-      const data = await response.json();
-      console.log("Upload success:", data);
-    } catch (error) {
-      console.error("Upload error:", error);
-    }
-  }, []);
+  }, [isRecording, mediaRecorder]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
