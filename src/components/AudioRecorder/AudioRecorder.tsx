@@ -36,6 +36,7 @@ export const AudioRecorder: React.FC = () => {
         });
         const url: string = URL.createObjectURL(audioBlob);
         setAudioURL(url);
+        uploadAudio(audioBlob);
       };
     } catch (error) {
       console.error("Error accessing media devices:", error);
@@ -48,6 +49,24 @@ export const AudioRecorder: React.FC = () => {
       setIsRecording(false);
     }
   }, [isRecording]);
+
+  const uploadAudio = useCallback(async (audioBlob: Blob): Promise<void> => {
+    const formData = new FormData();
+    formData.append("file", audioBlob, "recording.wav");
+    try {
+      const response = await fetch(
+        "https://SOME_API_ENDPOINT_OBVIOUSLY/upload",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+      const data = await response.json();
+      console.log("Upload success:", data);
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
